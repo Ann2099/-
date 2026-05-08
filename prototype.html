@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDA 端交互原型 - 爆款波次拣货</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.pda{width:375px;height:667px;background:#fff;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.3);border:3px solid #333;position:relative;overflow:hidden}
+.screen{width:100%;height:100%;display:none;flex-direction:column}
+.screen.active{display:flex}
+.header{background:rgb(41,157,227);color:#fff;padding:15px 20px;font-size:18px;font-weight:bold;display:flex;justify-content:space-between;align-items:center}
+.header-sub{background:#fff;padding:10px 20px;font-size:14px;color:#666;border-bottom:1px solid #e0e0e0}
+.launch{background:#f5f5f5}
+.launch-header{background:rgb(41,157,227);color:#fff;padding:15px 20px;font-size:18px;font-weight:bold}
+.launch-body{padding:30px 20px}
+.launch-title{font-size:24px;font-weight:bold;color:#333;margin-bottom:30px;text-align:center}
+input[type=text],input[type=password]{width:100%;padding:14px 16px;border:1px solid #d0d0d0;border-radius:8px;font-size:16px;background:#fff;margin-bottom:15px;outline:none}
+input:focus{border-color:rgb(41,157,227)}
+.btn{width:100%;padding:14px;background:rgb(41,157,227);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:20px}
+.btn-secondary{background:#9ca3af;color:#fff}
+.operator{font-size:12px;color:#999;margin-top:10px;text-align:center}
+.card{background:#fff;margin:12px 15px;padding:16px;border-radius:8px;border:1px solid #e8e8e8}
+.card-title{font-size:13px;color:#666;margin-bottom:8px}
+.card-value{font-size:18px;font-weight:bold;color:#333}
+.card-value.blue{color:rgb(41,157,227)}
+.card-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0}
+.card-row:last-child{border-bottom:none}
+.card-row-label{font-size:13px;color:#666}
+.card-row-value{font-size:15px;color:#333}
+.scan-area{flex:1;display:flex;justify-content:center;align-items:center;padding:20px;background:#f5f5f5}
+.scan-box{width:100%;padding:30px;text-align:center;background:#fff;border-radius:8px;border:1px solid #e0e0e0}
+.scan-prompt{font-size:16px;color:#666;margin-bottom:10px}
+.scan-barcode{font-size:14px;color:#999}
+.actions{display:flex;gap:10px;padding:15px;background:#fff;border-top:1px solid #e0e0e0}
+.action-btn{flex:1;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer}
+.action-btn.primary{background:rgb(41,157,227);color:#fff}
+.action-btn.secondary{background:#f0f0f0;color:#666}
+.modal{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;justify-content:center;align-items:center;z-index:1000}
+.modal.active{display:flex}
+.modal-content{background:#fff;width:90%;border-radius:8px;padding:25px;margin-top:100px}
+.modal-title{font-size:18px;font-weight:bold;color:#333;margin-bottom:20px}
+.modal-input{border:1px solid #d0d0d0;border-radius:8px;margin-bottom:20px}
+.modal-input.error{border-color:#f59e0b;background:#fffbeb}
+.modal-input.success{border-color:#10b981;background:#ecfdf5}
+.count{font-size:42px;font-weight:bold;color:rgb(41,157,227);margin:20px 0}
+.scan-progress{width:100%;height:10px;background:#e5e7eb;border-radius:5px;margin-bottom:15px}
+.scan-progress-fill{height:100%;background:rgb(41,157,227);width:0%}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{flex:1;padding:14px;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+.modal-btn.confirm{background:rgb(41,157,227);color:#fff}
+.modal-btn.close{background:#f0f0f0;color:#666}
+.block-modal .modal-title{color:#dc2626}
+.toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:12px 24px;border-radius:8px;z-index:2000;display:none;white-space:nowrap}
+.toast.success{background:#10b981}
+.toast.error{background:#dc2626}
+.toast.warning{background:#f59e0b}
+.control{position:fixed;right:20px;top:50%;transform:translateY(-50%);background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.2);width:280px}
+.control-btn{width:100%;padding:10px;margin:5px 0;border:none;border-radius:6px;cursor:pointer}
+.control-btn.primary{background:rgb(41,157,227);color:#fff}
+.control-btn.secondary{background:#f0f0f0;color:#666}
+.dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:#ccc;cursor:pointer}
+.dot.active{background:rgb(41,157,227);width:20px;border-radius:4px}
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:15px;background:#f5f5f5;flex:1}
+.menu-grid-other{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:15px;background:#f5f5f5;flex:1}
+.menu-item{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+.menu-item.large{grid-column:span 2}
+.menu-item.full{grid-column:span 3}
+.menu-icon{width:48px;height:48px;margin-bottom:8px;display:flex;align-items:center;justify-content:center}
+.menu-icon svg{width:40px;height:40px}
+.menu-text{font-size:13px;color:#333}
+.header-icon{font-size:20px}
+.back-btn{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:5px 10px}
+</style>
+</head>
+<body>
+<div class="pda">
+<div class="screen active" id="mainMenu">
+<div class="header">
+<span>WMS2B</span>
+<span class="header-icon">👤→</span>
+</div>
+<div class="header-sub">当前登录人：test002(test002)</div>
+<div class="menu-grid">
+<div class="menu-item" onclick="toast('收货功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><div class="menu-text">收货</div></div>
+<div class="menu-item" onclick="toast('收货(快速)功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/><path d="M9 12l2 2 4-4"/></svg></div><div class="menu-text">收货(快速)</div></div>
+<div class="menu-item" onclick="toast('上架功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><div class="menu-text">上架</div></div>
+<div class="menu-item" onclick="toast('拣货功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/><path d="M5 18h14"/></svg></div><div class="menu-text">拣货</div></div>
+<div class="menu-item" onclick="toast('复核功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><div class="menu-text">复核</div></div>
+<div class="menu-item" onclick="toast('交接功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="menu-text">交接</div></div>
+<div class="menu-item" onclick="toast('库存功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 21v-4a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v4"/><path d="M8 21h8"/><path d="M8 7h1v4"/><path d="M12 7h1v4"/><path d="M16 7h1v4"/><path d="M3 10h18"/></svg></div><div class="menu-text">库存</div></div>
+<div class="menu-item" onclick="toast('补货功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/><path d="M16 10l4 4"/><path d="M20 10l-4 4"/></svg></div><div class="menu-text">补货</div></div>
+<div class="menu-item" onclick="toast('采销补货')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/><path d="M16 10l4 4"/><path d="M20 10l-4 4"/><path d="M8 14l4-4"/><path d="M12 14l-4-4"/></svg></div><div class="menu-text">采销补货</div></div>
+<div class="menu-item" onclick="toast('返拣功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="4"/></svg></div><div class="menu-text">返拣</div></div>
+<div class="menu-item" onclick="switchScreen('otherMenu')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div><div class="menu-text">其他</div></div>
+<div class="menu-item" onclick="toast('码板功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/><line x1="7 12l5 5 5-5"/></svg></div><div class="menu-text">码板</div></div>
+<div class="menu-item" onclick="toast('设置功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div class="menu-text">设置</div></div>
+<div class="menu-item" onclick="toast('订单预警')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div><div class="menu-text">订单预警</div></div>
+<div class="menu-item" onclick="toast('物流回单')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div><div class="menu-text">物流回单</div></div>
+<div class="menu-item full" onclick="toast('自动化功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div class="menu-text">自动化</div></div>
+</div>
+</div>
+<div class="screen" id="otherMenu">
+<div class="header">
+<button class="back-btn" onclick="switchScreen('mainMenu')">← 返回</button>
+<span>WMS2B</span>
+<span class="header-icon">👤→</span>
+</div>
+<div class="header-sub">当前登录人：test002(test002)</div>
+<div class="menu-grid-other">
+<div class="menu-item" onclick="toast('容器功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg></div><div class="menu-text">容器</div></div>
+<div class="menu-item" onclick="toast('包裹查询')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg></div><div class="menu-text">包裹查询</div></div>
+<div class="menu-item" onclick="toast('药监码采集')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M7 3v18M3 7h18"/><path d="M7 10l5 5 5-5"/></svg></div><div class="menu-text">药监码采集</div></div>
+<div class="menu-item" onclick="switchScreen('s1')"><div class="menu-icon" style="background:rgb(41,157,227);border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M7 3v18M3 7h18"/><path d="M7 10l5 5 5-5"/></svg></div><div class="menu-text" style="color:rgb(41,157,227);font-weight:bold">爆款扫码</div></div>
+</div>
+</div>
+<div class="screen launch" id="s1">
+<div class="launch-header">爆款波次拣货</div>
+<div class="launch-body">
+<div class="card-title" style="margin-bottom:15px">波次号</div>
+<input type="text" id="waveInput" placeholder="请扫描波次号或首单运单号">
+<button class="btn" onclick="startWave()">启动任务</button>
+<div class="operator">操作员：OP001</div>
+</div>
+</div>
+<div class="screen" id="s2">
+<div class="header">爆款波次拣货</div>
+<div class="header-sub">当前登录人：OP001</div>
+<div class="card">
+<div class="card-row"><div class="card-row-label">当前运单号</div><div class="card-row-value blue" id="waybill">-</div></div>
+<div class="card-row"><div class="card-row-label">商品总数</div><div class="card-row-value" id="scanCount">0</div></div>
+<div class="card-row"><div class="card-row-label">已扫数量</div><div class="card-row-value" id="scannedCount">0</div></div>
+</div>
+<div class="card">
+<div class="card-row"><div class="card-row-label">当前商品</div><div class="card-row-value" id="productName">等待扫描...</div></div>
+<div class="card-row"><div class="card-row-label">商品条码</div><div class="card-row-value" id="barcode">-</div></div>
+</div>
+<div class="scan-area">
+<div class="scan-box">
+<div class="scan-prompt" id="scanPrompt">请扫描商品条码</div>
+<div class="scan-barcode" id="scanBarcode">-</div>
+</div>
+</div>
+<div class="actions">
+<button class="action-btn secondary" onclick="showPwd()">强制跳过</button>
+<button class="action-btn primary" onclick="toast('异常已上报','warning')">异常上报</button>
+</div>
+</div>
+<div class="modal" id="drugModal"><div class="modal-content"><div class="modal-title">请扫描药监码</div><input type="text" class="modal-input" id="drugInput" placeholder="请扫描药监码"><div class="count" id="drugCount">0</div><div class="scan-progress"><div class="scan-progress-fill" id="drugProgress"></div></div><div style="margin-bottom:15px" id="drugTarget">目标：0/5</div><div class="modal-btns"><button class="modal-btn close" onclick="closeDrug()">关闭</button><button class="modal-btn confirm" onclick="confirmDrug()">完成</button></div></div></div>
+<div class="modal block-modal" id="blockModal"><div class="modal-content"><div class="modal-title">⚠️ 任务未完成</div><div style="font-size:14px;color:#64748b;margin:20px 0" id="blockText">当前波次尚有未扫描订单，禁止切换波次。</div><button class="modal-btn confirm" onclick="document.getElementById('blockModal').classList.remove('active')">确定</button></div></div>
+<div class="modal" id="pwdModal"><div class="modal-content"><div class="modal-title">主管权限验证</div><input type="password" class="modal-input" id="pwdInput" placeholder="请输入主管密码"><div class="modal-btns"><button class="modal-btn close" onclick="closePwd()">取消</button><button class="modal-btn confirm" onclick="verifyPwd()">验证</button></div></div></div>
+<div class="toast" id="toast"></div>
+</div>
+<div class="control">
+<h3 style="margin-bottom:15px">🎮 原型交互控制</h3>
+<button class="control-btn primary" onclick="switchScreen('mainMenu')">主菜单页面</button>
+<button class="control-btn primary" onclick="switchScreen('otherMenu')">其他功能页面</button>
+<button class="control-btn primary" onclick="switchScreen('s1')">启动页</button>
+<button class="control-btn primary" onclick="switchScreen('s2')">扫描页</button>
+<button class="control-btn secondary" onclick="simNormal()" style="margin-top:15px">场景 A：普通扫描</button>
+<button class="control-btn secondary" onclick="simTwoInOne()">场景 B：二码合一</button>
+<button class="control-btn secondary" onclick="simComplete()">场景 C：订单完成</button>
+<div style="margin-top:15px;font-size:12px;color:#64748b"><strong>测试条码:</strong><br>商品：6901234567890<br>药监：81234567890123456789</div>
+</div>
+<script>
+var state={screen:1,waybill:'',total:0,scanned:0,drugTarget:5,drugScanned:0,blocked:false};
+function toast(m,t){var e=document.getElementById('toast');e.textContent=m;e.className='toast '+t;e.style.display='block';setTimeout(function(){e.style.display='none'},2000)}
+function switchScreen(n){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(n).classList.add('active')}
+function startWave(){var v=document.getElementById('waveInput').value.trim();if(!v){toast('请输入波次号','warning');return}state.waybill='SF'+Math.floor(Math.random()*1000000000);state.total=Math.floor(Math.random()*10)+5;state.scanned=0;update();switchScreen('s2');toast('任务加载成功','success')}
+function update(){document.getElementById('waybill').textContent=state.waybill;document.getElementById('scanCount').textContent=state.total;document.getElementById('scannedCount').textContent=state.scanned}
+function simNormal(){if(document.getElementById('s2').classList.contains('active')===false){toast('请先切换到扫描页','warning');return}document.getElementById('barcode').textContent='6901234567890';document.getElementById('productName').textContent='阿莫西林胶囊';document.getElementById('scanPrompt').textContent='商品条码已扫描';state.drugScanned=0;updateDrug();document.getElementById('drugModal').classList.add('active')}
+function closeDrug(){document.getElementById('drugModal').classList.remove('active');document.getElementById('scanPrompt').textContent='请扫描商品条码';document.getElementById('barcode').textContent='-';document.getElementById('drugInput').value='';document.getElementById('drugInput').classList.remove('error','success')}
+function confirmDrug(){var c=document.getElementById('drugInput').value.trim();if(!c.match(/^8\d{19}$/)){document.getElementById('drugInput').classList.add('error');toast('药监码格式错误','error');return}document.getElementById('drugInput').classList.remove('error');document.getElementById('drugInput').classList.add('success');state.drugScanned++;updateDrug();if(state.drugScanned>=state.drugTarget){setTimeout(function(){closeDrug();state.scanned++;update();toast('本单完成','success')},500)}}
+function updateDrug(){document.getElementById('drugCount').textContent=state.drugScanned;var p=(state.drugScanned/state.drugTarget)*100;document.getElementById('drugProgress').style.width=p+'%';document.getElementById('drugTarget').textContent='目标：'+state.drugScanned+'/'+state.drugTarget}
+function simTwoInOne(){if(document.getElementById('s2').classList.contains('active')===false){toast('请先切换到扫描页','warning');return}document.getElementById('barcode').textContent='81234567890123456789';document.getElementById('productName').textContent='布洛芬缓释胶囊(二码合一)';toast('检测到二码合一商品','success');setTimeout(function(){state.scanned++;update();document.getElementById('scanPrompt').textContent='请扫描商品条码';document.getElementById('barcode').textContent='-';toast('二码合一自动录入成功','success')},500)}
+function simComplete(){document.getElementById('waybill').textContent='-';document.getElementById('scanCount').textContent='0';document.getElementById('scannedCount').textContent='0';document.getElementById('productName').textContent='等待扫描...';document.getElementById('barcode').textContent='-';document.getElementById('scanPrompt').textContent='请扫描商品条码';state.waybill='SF'+Math.floor(Math.random()*1000000000);state.total=Math.floor(Math.random()*10)+5;state.scanned=0;setTimeout(function(){update();toast('本单完成，已切换下一单','success')},500)}
+function showPwd(){document.getElementById('pwdModal').classList.add('active');document.getElementById('pwdInput').value=''}
+function closePwd(){document.getElementById('pwdModal').classList.remove('active')}
+function verifyPwd(){if(document.getElementById('pwdInput').value==='123456'){toast('验证成功，已跳过','success');closePwd()}else{toast('密码错误','error')}}
+</script>
+</body>
+</html>
