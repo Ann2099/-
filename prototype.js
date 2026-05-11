@@ -1,4 +1,4 @@
-﻿const state={screen:1,waybill:'',total:0,scanned:0,drugTarget:5,drugScanned:0,blocked:false};
+const state={screen:1,waybill:'',total:0,scanned:0,drugTarget:5,drugScanned:0,blocked:false};
 const audio=new(window.AudioContext||window.webkitAudioContext)();
 function play(t){const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);if(t==='ok'){o.frequency.value=1200;g.gain.value=0.3;o.start();setTimeout(()=>o.stop(),100)}else if(t==='err'){o.frequency.value=300;g.gain.value=0.5;o.start();setTimeout(()=>o.stop(),500)}else{o.frequency.value=1500;g.gain.value=0.3;o.start();setTimeout(()=>o.stop(),300)}}
 function toast(m,t=''){const e=document.getElementById('toast');e.textContent=m;e.className='toast '+t;e.style.display='block';setTimeout(()=>e.style.display='none',2000)}

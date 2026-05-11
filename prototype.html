@@ -8,7 +8,8 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Arial,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
 .pda{width:375px;height:667px;background:#fff;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.3);border:3px solid #333;position:relative;overflow:hidden}
-.screen{width:100%;height:100%;display:none;flex-direction:column}
+.screen{width:100%;height:100%;display:none;flex-direction:column;overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
 .screen.active{display:flex}
 .header{background:rgb(41,157,227);color:#fff;padding:15px 20px;font-size:18px;font-weight:bold;display:flex;justify-content:space-between;align-items:center}
 .header-sub{background:#fff;padding:10px 20px;font-size:14px;color:#666;border-bottom:1px solid #e0e0e0}
@@ -21,7 +22,9 @@ input:focus{border-color:rgb(41,157,227)}
 .btn{width:100%;padding:14px;background:rgb(41,157,227);color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:20px}
 .btn-secondary{background:#9ca3af;color:#fff}
 .operator{font-size:12px;color:#999;margin-top:10px;text-align:center}
-.card{background:#fff;margin:12px 15px;padding:16px;border-radius:8px;border:1px solid #e8e8e8}
+.card{background:#fff;margin:8px 12px;padding:12px;border-radius:8px;border:1px solid #e8e8e8}
+.card.scan-input-card{padding:0;border:none;background:transparent}
+.progress-bar{padding:8px 12px;background:#f5f5f5}
 .card-title{font-size:13px;color:#666;margin-bottom:8px}
 .card-value{font-size:18px;font-weight:bold;color:#333}
 .card-value.blue{color:rgb(41,157,227)}
@@ -47,6 +50,7 @@ input:focus{border-color:rgb(41,157,227)}
 .count{font-size:42px;font-weight:bold;color:rgb(41,157,227);margin:20px 0}
 .scan-progress{width:100%;height:10px;background:#e5e7eb;border-radius:5px;margin-bottom:15px}
 .scan-progress-fill{height:100%;background:rgb(41,157,227);width:0%}
+.scan-progress-small{width:80px;height:6px;background:#e5e7eb;border-radius:3px}
 .modal-btns{display:flex;gap:10px}
 .modal-btn{flex:1;padding:14px;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
 .modal-btn.confirm{background:rgb(41,157,227);color:#fff}
@@ -56,21 +60,29 @@ input:focus{border-color:rgb(41,157,227)}
 .toast.success{background:#10b981}
 .toast.error{background:#dc2626}
 .toast.warning{background:#f59e0b}
-.control{position:fixed;right:20px;top:50%;transform:translateY(-50%);background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.2);width:280px}
+.toast.info{background:#299de3}
+.control{position:fixed;right:20px;top:20px;bottom:20px;background:#fff;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.2);width:280px;overflow-y:auto;-ms-overflow-style:none;scrollbar-width:none;transition:transform 0.3s ease, opacity 0.3s ease}
+.control::-webkit-scrollbar{display:none}
+.control.collapsed{transform:translateX(100%);opacity:0;pointer-events:none}
+.expand-btn{position:fixed;right:20px;top:50%;transform:translateY(-50%);width:40px;height:40px;background:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:opacity 0.3s ease}
+.expand-btn.hidden{opacity:0;pointer-events:none}
 .control-btn{width:100%;padding:10px;margin:5px 0;border:none;border-radius:6px;cursor:pointer}
 .control-btn.primary{background:rgb(41,157,227);color:#fff}
 .control-btn.secondary{background:#f0f0f0;color:#666}
 .dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
 .dot{width:8px;height:8px;border-radius:50%;background:#ccc;cursor:pointer}
 .dot.active{background:rgb(41,157,227);width:20px;border-radius:4px}
-.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:15px;background:#f5f5f5;flex:1}
-.menu-grid-other{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:15px;background:#f5f5f5;flex:1}
-.menu-item{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+.menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:15px;background:#f5f5f5;flex:1}
+.menu-grid-other{display:block;padding:15px 12px;background:#f5f5f5;height:auto}
+.menu-grid-other .row{display:flex;gap:8px;margin-bottom:8px}
+.menu-grid-other .row:last-child{margin-bottom:0}
+.menu-item{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;width:100%;height:auto;aspect-ratio:1}
+.menu-item.other-page{width:calc(50% - 4px);height:80px;aspect-ratio:auto;margin:0}
 .menu-item.large{grid-column:span 2}
 .menu-item.full{grid-column:span 3}
-.menu-icon{width:48px;height:48px;margin-bottom:8px;display:flex;align-items:center;justify-content:center}
-.menu-icon svg{width:40px;height:40px}
-.menu-text{font-size:13px;color:#333}
+.menu-icon{width:40px;height:40px;margin-bottom:6px;display:flex;align-items:center;justify-content:center}
+.menu-icon svg{width:32px;height:32px}
+.menu-text{font-size:14px;color:#333;text-align:center}
 .header-icon{font-size:20px}
 .back-btn{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;padding:5px 10px}
 </style>
@@ -110,75 +122,127 @@ input:focus{border-color:rgb(41,157,227)}
 </div>
 <div class="header-sub">当前登录人：test002(test002)</div>
 <div class="menu-grid-other">
-<div class="menu-item" onclick="toast('容器功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg></div><div class="menu-text">容器</div></div>
-<div class="menu-item" onclick="toast('包裹查询')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg></div><div class="menu-text">包裹查询</div></div>
-<div class="menu-item" onclick="toast('药监码采集')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M7 3v18M3 7h18"/><path d="M7 10l5 5 5-5"/></svg></div><div class="menu-text">药监码采集</div></div>
-<div class="menu-item" onclick="switchScreen('s1')"><div class="menu-icon" style="background:rgb(41,157,227);border-radius:8px"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M7 3v18M3 7h18"/><path d="M7 10l5 5 5-5"/></svg></div><div class="menu-text" style="color:rgb(41,157,227);font-weight:bold">爆款扫码</div></div>
+<div class="row">
+<div class="menu-item other-page" onclick="toast('容器功能')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg></div><div class="menu-text">容器</div></div>
+<div class="menu-item other-page" onclick="toast('包裹查询')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 0 0 2.22 0L21 8M5 19h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg></div><div class="menu-text">包裹查询</div></div>
+</div>
+<div class="row">
+<div class="menu-item other-page" onclick="toast('药监码采集')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M7 3v18M3 7h18"/><path d="M7 10l5 5 5-5"/></svg></div><div class="menu-text">药监码采集</div></div>
+<div class="menu-item other-page" onclick="switchScreen('s1')"><div class="menu-icon"><svg viewBox="0 0 24 24" fill="none" stroke="rgb(41,157,227)" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="menu-text">爆款扫码</div></div>
+</div>
 </div>
 </div>
 <div class="screen launch" id="s1">
-<div class="launch-header">爆款波次拣货</div>
+<div class="launch-header" style="display:flex;justify-content:space-between;align-items:center"><span>爆款药监码采集</span><span style="font-size:12px;font-weight:normal">👤 OP001</span></div>
 <div class="launch-body">
-<div class="card-title" style="margin-bottom:15px">波次号</div>
-<input type="text" id="waveInput" placeholder="请扫描波次号或首单运单号">
-<button class="btn" onclick="startWave()">启动任务</button>
-<div class="operator">操作员：OP001</div>
+<div class="card-title" style="margin-bottom:15px">运单号<span style="color:#dc2626;font-size:14px;font-weight:normal;margin-left:8px" id="waveNoDisplay"></span></div>
+<input type="text" id="waveInput" placeholder="请扫描运单号">
+<button class="btn" onclick="startWave()">开始扫描</button>
 </div>
 </div>
 <div class="screen" id="s2">
-<div class="header">爆款波次拣货</div>
-<div class="header-sub">当前登录人：OP001</div>
+<div class="header">爆款药监码采集<span style="font-size:12px;font-weight:normal">👤 OP001</span></div>
+<div class="progress-bar">
+<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>波次进度(波次号：<span id="waveNo">-</span>)</span><span class="blue" id="waveProgress">0/100</span></div>
+<div class="scan-progress" style="height:6px"><div class="scan-progress-fill" id="waveProgressBar"></div></div>
+</div>
+<div class="card scan-input-card">
+<input type="text" id="scanInput" placeholder="请扫药监码/商品条码" style="margin-bottom:0;font-size:14px;padding:12px">
+</div>
 <div class="card">
 <div class="card-row"><div class="card-row-label">当前运单号</div><div class="card-row-value blue" id="waybill">-</div></div>
-<div class="card-row"><div class="card-row-label">商品总数</div><div class="card-row-value" id="scanCount">0</div></div>
-<div class="card-row"><div class="card-row-label">已扫数量</div><div class="card-row-value" id="scannedCount">0</div></div>
+<div class="card-row"><div class="card-row-label">发运订单号</div><div class="card-row-value" id="orderNo">CK000179406863</div></div>
+<div class="card-row"><div class="card-row-label">发运箱号</div><div class="card-row-value" id="boxNo">CK00017940686300001</div></div>
+<div class="card-row"><div class="card-row-label">商品已扫/商品总数</div><div class="card-row-value" id="scanCount">0 / 0</div></div>
 </div>
-<div class="card">
-<div class="card-row"><div class="card-row-label">当前商品</div><div class="card-row-value" id="productName">等待扫描...</div></div>
-<div class="card-row"><div class="card-row-label">商品条码</div><div class="card-row-value" id="barcode">-</div></div>
+<div class="card" id="currentProductCard" style="display:none">
+<div class="card-row"><div class="card-row-label">当前商品条码</div><div class="card-row-value blue" id="currentBarcode">-</div></div>
+<div class="card-row"><div class="card-row-label">商品名称</div><div class="card-row-value" id="productName">-</div></div>
+<div class="card-row">
+<div class="card-row-label">包装类型：</div><div class="card-row-value" id="packType">小包装</div>
+<div style="flex:1"></div>
+<div class="card-row-label">扫码目标：</div><div class="card-row-value blue" id="scanTarget">0/5</div>
 </div>
-<div class="scan-area">
-<div class="scan-box">
-<div class="scan-prompt" id="scanPrompt">请扫描商品条码</div>
-<div class="scan-barcode" id="scanBarcode">-</div>
-</div>
-</div>
-<div class="actions">
-<button class="action-btn secondary" onclick="showPwd()">强制跳过</button>
-<button class="action-btn primary" onclick="toast('异常已上报','warning')">异常上报</button>
+<div class="card-row"><div class="card-row-label">药监码列表：</div></div>
+<div id="drugCodeList" style="padding-left:12px;padding-right:12px"></div>
 </div>
 </div>
-<div class="modal" id="drugModal"><div class="modal-content"><div class="modal-title">请扫描药监码</div><input type="text" class="modal-input" id="drugInput" placeholder="请扫描药监码"><div class="count" id="drugCount">0</div><div class="scan-progress"><div class="scan-progress-fill" id="drugProgress"></div></div><div style="margin-bottom:15px" id="drugTarget">目标：0/5</div><div class="modal-btns"><button class="modal-btn close" onclick="closeDrug()">关闭</button><button class="modal-btn confirm" onclick="confirmDrug()">完成</button></div></div></div>
-<div class="modal block-modal" id="blockModal"><div class="modal-content"><div class="modal-title">⚠️ 任务未完成</div><div style="font-size:14px;color:#64748b;margin:20px 0" id="blockText">当前波次尚有未扫描订单，禁止切换波次。</div><button class="modal-btn confirm" onclick="document.getElementById('blockModal').classList.remove('active')">确定</button></div></div>
+<div class="modal" id="drugModal"><div class="modal-content"><div class="modal-title">请扫描药监码</div><input type="text" class="modal-input" id="drugInput" placeholder="请扫描药监码"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px"><span id="drugTarget">目标：0/5</span><div class="scan-progress-small"><div class="scan-progress-fill" id="drugProgress"></div></div></div><div style="margin-bottom:15px"><div style="font-size:12px;color:#64748b;margin-bottom:5px">药监码列表：</div><div id="drugCodeListModal" style="max-height:100px;overflow-y:auto;"></div></div><div class="modal-btns"><button class="modal-btn close" onclick="closeDrug()">关闭</button><button class="modal-btn confirm" onclick="confirmDrug()">完成</button></div></div></div>
+<div class="modal" id="noMatchModal"><div class="modal-content"><div class="modal-title" style="color:#dc2626">⚠️ 无法匹配</div><div style="font-size:14px;color:#333;margin:20px 0;line-height:1.6;word-break:break-all">监管码:<span id="noMatchCode"></span>无法匹配对应商品信息，请维护监管码与条码的对应关系</div></div></div>
+<div class="modal" id="notInOrderModal"><div class="modal-content"><div class="modal-title" style="color:#dc2626">⚠️ 商品不符</div><div style="font-size:16px;color:#333;margin:30px 0;text-align:center;font-weight:bold">该商品不属于该运单</div></div></div>
+<div class="modal block-modal" id="blockModal"><div class="modal-content"><div class="modal-title" style="color:#dc2626" id="blockTitle">⚠️ 运单号重复</div><div style="font-size:14px;color:#64748b;margin:20px 0" id="blockText">当前波次尚有未扫描订单，禁止切换波次。</div><button class="modal-btn confirm" onclick="closeBlockModal()">确定</button></div></div>
 <div class="modal" id="pwdModal"><div class="modal-content"><div class="modal-title">主管权限验证</div><input type="password" class="modal-input" id="pwdInput" placeholder="请输入主管密码"><div class="modal-btns"><button class="modal-btn close" onclick="closePwd()">取消</button><button class="modal-btn confirm" onclick="verifyPwd()">验证</button></div></div></div>
 <div class="toast" id="toast"></div>
 </div>
-<div class="control">
-<h3 style="margin-bottom:15px">🎮 原型交互控制</h3>
+<div class="control" id="controlPanel">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px">
+<button style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px" onclick="toggleControl()">✕</button>
+<h3 style="margin:0">🎮 原型交互控制</h3>
+</div>
 <button class="control-btn primary" onclick="switchScreen('mainMenu')">主菜单页面</button>
 <button class="control-btn primary" onclick="switchScreen('otherMenu')">其他功能页面</button>
-<button class="control-btn primary" onclick="switchScreen('s1')">启动页</button>
-<button class="control-btn primary" onclick="switchScreen('s2')">扫描页</button>
-<button class="control-btn secondary" onclick="simNormal()" style="margin-top:15px">场景 A：普通扫描</button>
+<button class="control-btn primary" onclick="switchScreen('s1')">运单号扫描页</button>
+<button class="control-btn primary" onclick="switchScreen('s2')">药监码扫描页</button>
+<div style="margin-top:15px;padding-top:15px;border-top:1px solid #e5e7eb">
+<div style="font-size:13px;color:#333;margin-bottom:10px"><strong>📱 运单号扫描页操作：</strong></div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 在输入框输入运单号（快递单号）</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 点击"开始扫描"按钮或按回车键进入扫描页</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>不属于当前波次运单号</strong>：sf123456789 → 提示需先完成本波次录入</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>重复运单号</strong>：YT123456789 或 JD987654321 → 提示已被其他用户占用</div>
+<div style="font-size:13px;color:#333;margin-bottom:10px;margin-top:10px"><strong>📱 药监码扫描页交互方式：</strong></div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 在输入框输入条码后按回车触发</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>普通商品条码</strong>：6901234567890 → 弹出药监码扫描</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>二码合一条码</strong>：81234567890123456789 → 自动完成</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>无录入关系药监码</strong>：81657820612423504345 → 提示无法匹配</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>非本订单药监码</strong>：81657820612423509999 → 提示商品不属于该运单</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• <strong>其他条码</strong>：任意输入 → 提示无法识别</div>
+<div style="font-size:12px;color:#64748b;margin-top:10px;padding-top:10px;border-top:1px dashed #e5e7eb"><strong>💊 药监码弹窗交互：</strong></div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 输入药监码后按回车校验（需8开头20位数字）</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 格式错误：提示错误，焦点返回输入框</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 格式正确：数量+1，更新进度（如 3/5）</div>
+<div style="font-size:12px;color:#64748b;margin-bottom:8px">• 数量达标：播放"滴"声，自动关闭弹窗</div>
+</div>
+<button class="control-btn secondary" onclick="simNormal()" style="margin-top:10px">场景 A：普通扫描</button>
 <button class="control-btn secondary" onclick="simTwoInOne()">场景 B：二码合一</button>
 <button class="control-btn secondary" onclick="simComplete()">场景 C：订单完成</button>
-<div style="margin-top:15px;font-size:12px;color:#64748b"><strong>测试条码:</strong><br>商品：6901234567890<br>药监：81234567890123456789</div>
+<div style="margin-top:15px;font-size:12px;color:#64748b"><strong>测试条码:</strong><br>商品：6901234567890<br>药监：81234567890123456789<br>无录入关系：81657820612423504345<br>非本订单：81657820612423509999</div>
 </div>
+<div class="expand-btn hidden" id="expandBtn" onclick="toggleControl()">☰</div>
 <script>
-var state={screen:1,waybill:'',total:0,scanned:0,drugTarget:5,drugScanned:0,blocked:false};
+var state={screen:1,waybill:'',total:0,scanned:0,drugTarget:5,drugScanned:0,blocked:false,waveTotal:100,waveCompleted:0,waveNo:'',currentBarcode:'',drugCodes:[]};
+var scannedWaybills={'YT123456789':'OP002','JD987654321':'OP003'};
+var completedBarcodes={};
+var barcodeDrugMap={'6901234567890':['83920184756291038475','81029384756102938475','85748392018475629103','82938475610293847561','84756291038475629103','81928374650192837465','86574839201847562910'],'6900000002025':['83847561029384756102','87562910384756291038','89283746501928374650','81234567890123456789']};
+var allScannedDrugCodes=[];
 function toast(m,t){var e=document.getElementById('toast');e.textContent=m;e.className='toast '+t;e.style.display='block';setTimeout(function(){e.style.display='none'},2000)}
 function switchScreen(n){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(n).classList.add('active')}
-function startWave(){var v=document.getElementById('waveInput').value.trim();if(!v){toast('请输入波次号','warning');return}state.waybill='SF'+Math.floor(Math.random()*1000000000);state.total=Math.floor(Math.random()*10)+5;state.scanned=0;update();switchScreen('s2');toast('任务加载成功','success')}
-function update(){document.getElementById('waybill').textContent=state.waybill;document.getElementById('scanCount').textContent=state.total;document.getElementById('scannedCount').textContent=state.scanned}
-function simNormal(){if(document.getElementById('s2').classList.contains('active')===false){toast('请先切换到扫描页','warning');return}document.getElementById('barcode').textContent='6901234567890';document.getElementById('productName').textContent='阿莫西林胶囊';document.getElementById('scanPrompt').textContent='商品条码已扫描';state.drugScanned=0;updateDrug();document.getElementById('drugModal').classList.add('active')}
-function closeDrug(){document.getElementById('drugModal').classList.remove('active');document.getElementById('scanPrompt').textContent='请扫描商品条码';document.getElementById('barcode').textContent='-';document.getElementById('drugInput').value='';document.getElementById('drugInput').classList.remove('error','success')}
-function confirmDrug(){var c=document.getElementById('drugInput').value.trim();if(!c.match(/^8\d{19}$/)){document.getElementById('drugInput').classList.add('error');toast('药监码格式错误','error');return}document.getElementById('drugInput').classList.remove('error');document.getElementById('drugInput').classList.add('success');state.drugScanned++;updateDrug();if(state.drugScanned>=state.drugTarget){setTimeout(function(){closeDrug();state.scanned++;update();toast('本单完成','success')},500)}}
-function updateDrug(){document.getElementById('drugCount').textContent=state.drugScanned;var p=(state.drugScanned/state.drugTarget)*100;document.getElementById('drugProgress').style.width=p+'%';document.getElementById('drugTarget').textContent='目标：'+state.drugScanned+'/'+state.drugTarget}
-function simTwoInOne(){if(document.getElementById('s2').classList.contains('active')===false){toast('请先切换到扫描页','warning');return}document.getElementById('barcode').textContent='81234567890123456789';document.getElementById('productName').textContent='布洛芬缓释胶囊(二码合一)';toast('检测到二码合一商品','success');setTimeout(function(){state.scanned++;update();document.getElementById('scanPrompt').textContent='请扫描商品条码';document.getElementById('barcode').textContent='-';toast('二码合一自动录入成功','success')},500)}
-function simComplete(){document.getElementById('waybill').textContent='-';document.getElementById('scanCount').textContent='0';document.getElementById('scannedCount').textContent='0';document.getElementById('productName').textContent='等待扫描...';document.getElementById('barcode').textContent='-';document.getElementById('scanPrompt').textContent='请扫描商品条码';state.waybill='SF'+Math.floor(Math.random()*1000000000);state.total=Math.floor(Math.random()*10)+5;state.scanned=0;setTimeout(function(){update();toast('本单完成，已切换下一单','success')},500)}
+function generateWaveNo(){var now=new Date();var year=now.getFullYear().toString().slice(-2);var month=String(now.getMonth()+1).padStart(2,'0');var day=String(now.getDate()).padStart(2,'0');var seq=String(Math.floor(Math.random()*1000000)).padStart(6,'0');return 'WV1fss2b'+year+month+day+seq}
+function toggleControl(){var e=document.getElementById('controlPanel');var t=document.getElementById('expandBtn');e.classList.toggle('collapsed');t.classList.toggle('hidden')}
+function startWave(){var v=document.getElementById('waveInput').value.trim();if(!v){toast('请输入运单号','warning');return}if(state.waveNo&&v==='sf123456789'){document.getElementById('blockTitle').textContent='⚠️ 任务未完成';document.getElementById('blockText').textContent='运单号不属于当前波次，请先完成本波次药监码录入！';document.getElementById('blockModal').classList.add('active');return}if(scannedWaybills[v]){document.getElementById('blockTitle').textContent='⚠️ 运单号重复';document.getElementById('blockText').textContent='运单号已被用户'+scannedWaybills[v]+'占用，请扫描正确运单号！';document.getElementById('blockModal').classList.add('active');return}scannedWaybills[v]='OP001';state.waveNo=generateWaveNo();state.waybill=v;state.total=Math.floor(Math.random()*10)+5;state.scanned=0;state.currentBarcode='';state.drugCodes=[];state.drugScanned=0;document.getElementById('waveNoDisplay').textContent='当前波次：'+state.waveNo;update();switchScreen('s2');toast('任务加载成功','success')}
+function update(){document.getElementById('waybill').textContent=state.waybill;document.getElementById('scanCount').textContent=state.scanned+' / '+state.total;document.getElementById('waveProgress').textContent=state.waveCompleted+'/'+state.waveTotal;var waveProgressS1=document.getElementById('waveProgressS1');if(waveProgressS1){waveProgressS1.textContent=state.waveCompleted+'/'+state.waveTotal}document.getElementById('waveNo').textContent=state.waveNo;var progress=state.waveTotal>0?Math.round((state.waveCompleted/state.waveTotal)*100):0;document.getElementById('waveProgressBar').style.width=progress+'%'}
+function handleScanInput(e){if(e.keyCode===13){var barcode=document.getElementById('scanInput').value.trim();document.getElementById('scanInput').value='';if(!barcode){return}if(barcode==='6901234567890'){if(completedBarcodes[barcode]){toast('该商品已扫描完成','info');state.currentBarcode=barcode;state.drugTarget=completedBarcodes[barcode].length;state.drugScanned=completedBarcodes[barcode].length;state.drugCodes=completedBarcodes[barcode];updateCurrentProduct();updateDrug();updateDrugCodeList();document.getElementById('currentProductCard').style.display='block';document.getElementById('currentBarcode').innerHTML=state.currentBarcode+' <span style="color:#10b981">已完成</span>';return}toast('商品条码已扫描','success');state.currentBarcode=barcode;state.drugTarget=7;state.drugScanned=0;state.drugCodes=[];updateCurrentProduct();updateDrug();updateDrugCodeList();document.getElementById('currentProductCard').style.display='block';document.getElementById('drugModal').classList.add('active')}else if(barcode==='81657820612423504345'){showNoMatchModal('81657820612423504345')}else if(barcode==='81657820612423509999'){showNotInOrderModal()}else if(barcode.match(/^8\d{19}$/)){if(allScannedDrugCodes.indexOf(barcode)>=0){toast('该商品已扫描完成','info');state.currentBarcode='6900000002025';state.drugTarget=1;state.drugScanned=1;state.drugCodes=[barcode];updateCurrentProduct();updateDrug();updateDrugCodeList();document.getElementById('currentProductCard').style.display='block';document.getElementById('currentBarcode').innerHTML=state.currentBarcode+' <span style="color:#10b981">已完成</span>';return}toast('检测到二码合一商品','success');state.currentBarcode='6900000002025';state.drugTarget=1;state.drugScanned=1;state.drugCodes=[barcode];allScannedDrugCodes.push(barcode);updateCurrentProduct();updateDrug();addDrugCodeToList(barcode);document.getElementById('currentProductCard').style.display='block';setTimeout(function(){state.scanned++;update();document.getElementById('currentBarcode').innerHTML=state.currentBarcode+' <span style="color:#10b981">已完成</span>';toast('二码合一自动录入成功','success');setTimeout(function(){document.getElementById('currentProductCard').style.display='none';state.currentBarcode='';state.drugCodes=[];state.drugScanned=0;state.drugTarget=0;document.getElementById('drugCodeList').innerHTML=''},1500);checkOrderComplete()},500)}else{toast('无法识别该条码','error')}}}
+function showNoMatchModal(drugCode){var modal=document.getElementById('noMatchModal');document.getElementById('noMatchCode').textContent=drugCode;modal.classList.add('active');setTimeout(function(){modal.classList.remove('active');document.getElementById('scanInput').focus()},5000)}
+function showNotInOrderModal(){var modal=document.getElementById('notInOrderModal');modal.classList.add('active');playErrorSound();setTimeout(function(){modal.classList.remove('active');document.getElementById('scanInput').focus()},3000)}
+function playErrorSound(){var audioContext=new (window.AudioContext||window.webkitAudioContext)();var oscillator=audioContext.createOscillator();var gainNode=audioContext.createGain();oscillator.connect(gainNode);gainNode.connect(audioContext.destination);oscillator.frequency.value=200;oscillator.type='sawtooth';gainNode.gain.setValueAtTime(0.5,audioContext.currentTime);gainNode.gain.exponentialRampToValueAtTime(0.01,audioContext.currentTime+0.3);oscillator.start(audioContext.currentTime);oscillator.stop(audioContext.currentTime+0.3)}
+function checkOrderComplete(){if(state.scanned>=state.total&&state.total>0){state.waveCompleted++;update();toast('订单完成！','success');setTimeout(function(){simComplete()},1000)}}
+function playBeep(){var audioContext=new (window.AudioContext||window.webkitAudioContext)();var oscillator=audioContext.createOscillator();var gainNode=audioContext.createGain();oscillator.connect(gainNode);gainNode.connect(audioContext.destination);oscillator.frequency.value=800;oscillator.type='sine';gainNode.gain.setValueAtTime(0.3,audioContext.currentTime);gainNode.gain.exponentialRampToValueAtTime(0.01,audioContext.currentTime+0.1);oscillator.start(audioContext.currentTime);oscillator.stop(audioContext.currentTime+0.1)}
+function closeDrug(){document.getElementById('drugModal').classList.remove('active');document.getElementById('drugInput').value='';document.getElementById('drugInput').classList.remove('error','success');document.getElementById('drugCodeListModal').innerHTML='';setTimeout(function(){var scanInput=document.getElementById('scanInput');if(scanInput){scanInput.focus()}},100)}
+function confirmDrug(){var c=document.getElementById('drugInput').value.trim();if(!c.match(/^8\d{19}$/)){document.getElementById('drugInput').classList.add('error');toast('药监码格式错误','error');document.getElementById('drugInput').focus();return}if(allScannedDrugCodes.indexOf(c)>=0){document.getElementById('drugInput').classList.add('error');toast('药监码已扫描，不能重复录入','error');document.getElementById('drugInput').focus();return}var validCodes=barcodeDrugMap[state.currentBarcode]||[];if(validCodes.indexOf(c)<0){document.getElementById('drugInput').classList.add('error');toast('药监码与当前商品不匹配','error');document.getElementById('drugInput').focus();return}document.getElementById('drugInput').classList.remove('error');document.getElementById('drugInput').classList.add('success');state.drugScanned++;state.drugCodes.push(c);allScannedDrugCodes.push(c);document.getElementById('drugInput').value='';updateDrug();if(state.drugScanned>=state.drugTarget){completedBarcodes[state.currentBarcode]=[...state.drugCodes];playBeep();setTimeout(function(){closeDrug();state.scanned++;update();document.getElementById('currentBarcode').innerHTML=state.currentBarcode+' <span style="color:#10b981">已完成</span>';updateDrugCodeList();toast('本商品扫码完成','success');checkOrderComplete()},300)}}
+function handleDrugInput(e){if(e.keyCode===13){confirmDrug()}}
+function updateDrug(){var p=(state.drugScanned/state.drugTarget)*100;document.getElementById('drugProgress').style.width=p+'%';document.getElementById('drugTarget').textContent='目标：'+state.drugScanned+'/'+state.drugTarget;document.getElementById('scanTarget').textContent=state.drugScanned+'/'+state.drugTarget;updateDrugCodeListModal()}
+function updateCurrentProduct(){document.getElementById('currentBarcode').textContent=state.currentBarcode;document.getElementById('productName').textContent='测试商品名称'}
+function updateDrugCodeList(){var list=document.getElementById('drugCodeList');list.innerHTML='';state.drugCodes.forEach(function(code){addDrugCodeToList(code)})}
+function addDrugCodeToList(code){var list=document.getElementById('drugCodeList');var div=document.createElement('div');div.style.fontSize='12px';div.style.color='#333';div.style.marginBottom='4px';div.textContent=code;list.appendChild(div)}
+function updateDrugCodeListModal(){var list=document.getElementById('drugCodeListModal');list.innerHTML='';state.drugCodes.forEach(function(code){addDrugCodeToListModal(code)})}
+function addDrugCodeToListModal(code){var list=document.getElementById('drugCodeListModal');var div=document.createElement('div');div.style.fontSize='12px';div.style.color='#333';div.style.marginBottom='3px';div.textContent=code;list.appendChild(div)}
+function simNormal(){if(document.getElementById('s2').classList.contains('active')===false){toast('请先切换到扫描页','warning');return}state.drugScanned=0;updateDrug();document.getElementById('drugModal').classList.add('active');toast('商品条码已扫描，弹出药监码扫描','success')}
+function simTwoInOne(){if(document.getElementById('s2').classList.contains('active')===false){toast('请先切换到扫描页','warning');return}toast('检测到二码合一商品','success');setTimeout(function(){state.scanned++;state.waveCompleted++;update();toast('二码合一自动录入成功','success');checkOrderComplete()},500)}
+function simComplete(){state.waybill='';state.total=0;state.scanned=0;state.currentBarcode='';state.drugScanned=0;state.drugCodes=[];document.getElementById('waybill').textContent='-';document.getElementById('scanCount').textContent='0 / 0';document.getElementById('scanTarget').textContent='0/5';document.getElementById('currentBarcode').textContent='-';document.getElementById('productName').textContent='-';document.getElementById('drugCodeList').innerHTML='';document.getElementById('currentProductCard').style.display='none';switchScreen('s1');toast('本波次完成，返回启动页','success')}
 function showPwd(){document.getElementById('pwdModal').classList.add('active');document.getElementById('pwdInput').value=''}
 function closePwd(){document.getElementById('pwdModal').classList.remove('active')}
+function closeBlockModal(){document.getElementById('blockModal').classList.remove('active');var waveInput=document.getElementById('waveInput');waveInput.focus();waveInput.select()}
 function verifyPwd(){if(document.getElementById('pwdInput').value==='123456'){toast('验证成功，已跳过','success');closePwd()}else{toast('密码错误','error')}}
+document.addEventListener('DOMContentLoaded',function(){var input=document.getElementById('scanInput');if(input){input.addEventListener('keydown',handleScanInput)}var drugInput=document.getElementById('drugInput');if(drugInput){drugInput.addEventListener('keydown',handleDrugInput)}var waveInput=document.getElementById('waveInput');if(waveInput){waveInput.addEventListener('keydown',function(e){if(e.keyCode===13){startWave()}})}})
 </script>
 </body>
 </html>
